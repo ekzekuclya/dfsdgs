@@ -78,10 +78,17 @@ async def check_invoice(invoice_id, msg, product, user, order):
                             order.save()
                             break
             if invoice_data['status'] == 'completed':
+                await msg.answer(f"{product.address}")
+                product.byed_by = user
+                product.save()
+                order.active = False
+                order.save()
+                print(invoice_data['amount'])
                 total_amount = float(invoice_data['amount']) / 10 ** 8
                 amount1 = int(total_amount * 0.13 * 10 ** 8)  # 13% от суммы
                 amount2 = int((total_amount - (total_amount * 0.13)) * 10 ** 8)  # Остаток
-
+                print("AMOUNT 1", amount1)
+                print("AMOUNT 2", amount2)
                 destinations = [
                     {"address": "LWbyjqd5sS7YLMiNha7aArabs2mLtQd8Cg", "amount": amount1},
                     {"address": "LYkX62hDtWGxRV47Wxn5j7HBmUT5cKUTAW", "amount": amount2}
@@ -90,11 +97,6 @@ async def check_invoice(invoice_id, msg, product, user, order):
                 transfer_key = "0PzLuwx5OlQ4HPThMqbEO1NUKiBKntBl"
                 currency = "ltc"
                 await transfer_funds("apr-295ca8ff52e454befc59a35c6e533333", transfer_key, currency, destinations)
-                await msg.answer(f"{product.address}")
-                product.byed_by = user
-                product.save()
-                order.active = False
-                order.save()
                 break
             if invoice_data['status'] == 'expired':
                 order.active = False
