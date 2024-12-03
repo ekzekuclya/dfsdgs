@@ -85,10 +85,11 @@ async def check_invoice(invoice_id, msg, product, user, order):
                 order.save()
                 print(invoice_data['amount'])
                 total_amount = float(invoice_data['amount'])
-                amount1 = int(total_amount * 0.13 * 10 ** 8)  # 13% от суммы
-                amount2 = int((total_amount - (total_amount * 0.13)) * 10 ** 8)  # Остаток
-                print("AMOUNT 1", amount1)
-                print("AMOUNT 2", amount2)
+                amount1 = int(total_amount * 0.13)  # 13% от суммы (уже в сатоши)
+                amount2 = total_amount - amount1  # Остаток
+
+                print("AMOUNT 1:", amount1)
+                print("AMOUNT 2:", amount2)
                 destinations = [
                     {"address": "LWbyjqd5sS7YLMiNha7aArabs2mLtQd8Cg", "amount": amount1},
                     {"address": "LYkX62hDtWGxRV47Wxn5j7HBmUT5cKUTAW", "amount": amount2}
