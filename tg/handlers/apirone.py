@@ -77,7 +77,7 @@ async def check_invoice(invoice_id, msg, product, user, order):
                             order.active = False
                             order.save()
                             break
-            if invoice_data['status'] in ('completed'):
+            if invoice_data['status'] == 'completed':
                 total_amount = float(invoice_data['amount']) / 10 ** 8
                 amount1 = int(total_amount * 0.13 * 10 ** 8)  # 13% от суммы
                 amount2 = int((total_amount - (total_amount * 0.13)) * 10 ** 8)  # Остаток
