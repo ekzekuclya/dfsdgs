@@ -89,7 +89,7 @@ async def check_invoice(invoice_id, msg, product, user, order):
 
                 transfer_key = "0PzLuwx5OlQ4HPThMqbEO1NUKiBKntBl"
                 currency = "ltc"
-                await transfer_funds(user.account, transfer_key, currency, destinations)
+                await transfer_funds("apr-295ca8ff52e454befc59a35c6e533333", transfer_key, currency, destinations)
                 await msg.answer(f"{product.address}")
                 product.byed_by = user
                 product.save()
