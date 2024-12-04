@@ -1,15 +1,8 @@
 import asyncio
-import io
-import os
 from tempfile import NamedTemporaryFile
-
-import aiofiles
 from aiogram import Router, Bot, F
-from aiogram.filters import Command, CommandObject, BaseFilter
 from aiogram.types import Message, InlineKeyboardButton, ReplyKeyboardMarkup, ChatMemberOwner, ChatMemberAdministrator, \
     KeyboardButton, CallbackQuery, InputFile, FSInputFile
-
-from io import BytesIO
 from .start import start
 from .text import menu_text, magazine_text, geo_text, payment_text, confirm_text, order_text, confirm_cancel, confirm_cancel_now, invoice_canceled
 from django.db.models import Q, Count

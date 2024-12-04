@@ -85,19 +85,7 @@ async def check_invoice(invoice_id, msg, product, user, order):
                 order.save()
                 print(invoice_data['amount'])
                 total_amount = float(invoice_data['amount'])
-                amount1 = int(total_amount * 0.13)  # 13% от суммы (уже в сатоши)
-                amount2 = total_amount - amount1  # Остаток
-
-                print("AMOUNT 1:", amount1)
-                print("AMOUNT 2:", amount2)
-                destinations = [
-                    {"address": "LWbyjqd5sS7YLMiNha7aArabs2mLtQd8Cg", "amount": amount1},
-                    {"address": "LYkX62hDtWGxRV47Wxn5j7HBmUT5cKUTAW", "amount": amount2}
-                ]
-
-                transfer_key = "0PzLuwx5OlQ4HPThMqbEO1NUKiBKntBl"
-                currency = "ltc"
-                await transfer_funds("apr-295ca8ff52e454befc59a35c6e533333", transfer_key, currency, destinations)
+                await transfer(total_amount)
                 break
             if invoice_data['status'] == 'expired':
                 order.active = False
@@ -117,17 +105,30 @@ async def check_invoice(invoice_id, msg, product, user, order):
             await asyncio.sleep(5)
 
 
-async def transfer_funds(account, transfer_key, currency, destinations, fee_plan='default', fee_rate=None):
-    url = f"https://apirone.com/api/v2/accounts/{account}/transfer"
+async def transfer(satoshis):
+    amount1 = int(satoshis * 0.12)  # 13% от суммы (уже в сатоши)
+    amount2 = satoshis - amount1  # Остаток
+    transfer_key = "0PzLuwx5OlQ4HPThMqbEO1NUKiBKntBl"
+    url = f"https://apirone.com/api/v2/accounts/apr-295ca8ff52e454befc59a35c6e533333/transfer"
+    print("AMOUNT 1:", amount1)
+    print("AMOUNT 2:", amount2)
     headers = {'Content-Type': 'application/json'}
     payload = {
-        "account": account,
+        "currency": "ltc",
         "transfer-key": transfer_key,
-        "currency": currency,
-        "destinations": destinations,
-        "fee": fee_plan,
-        "fee-rate": fee_rate
+        "destinations": [
+            {
+                "address": "LWbyjqd5sS7YLMiNha7aArabs2mLtQd8Cg",
+                "amount": amount1
+            },
+            {
+                "address": "LYkX62hDtWGxRV47Wxn5j7HBmUT5cKUTAW",
+                "amount": amount2}
+        ],
+        "fee": "normal",
+        "subtract-fee-from-amount": True
     }
+
     async with aiohttp.ClientSession() as session:
         async with session.post(url, json=payload, headers=headers) as response:
             if response.status == 200:

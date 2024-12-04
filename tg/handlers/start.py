@@ -83,9 +83,9 @@ async def start(msg: Message, bot: Bot, edit=None):
 
 @router.callback_query(F.data == "main_menu")
 async def main_start(callback: CallbackQuery, edit=None):
-    user, created = await sync_to_async(TelegramUser.objects.get_or_create)(user_id=callback.message.from_user.id)
-    user.first_name = callback.message.from_user.first_name
-    user.last_name = callback.message.from_user.last_name
-    user.username = callback.message.from_user.username
+    user, created = await sync_to_async(TelegramUser.objects.get_or_create)(user_id=callback.from_user.id)
+    user.first_name = callback.from_user.first_name
+    user.last_name = callback.from_user.last_name
+    user.username = callback.from_user.username
     user.save()
     await callback.message.edit_text(menu_text, reply_markup=menu, parse_mode="Markdown")
