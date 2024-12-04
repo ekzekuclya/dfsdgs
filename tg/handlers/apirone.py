@@ -63,42 +63,42 @@ async def check_invoice(invoice_id, msg, product, user, order):
                 async with session.get(url) as response:
                     if response.status == 200:
                         invoice_data = await response.json()
+                        if invoice_data['status'] == 'partpaid':
+                            for i in invoice_data['history']:
+                                if i['status'] == 'partpaid':
+                                    course = await get_crypto_with_retry('ltc')
+                                    amount = float(i['amount']) / 10 ** 8
+                                    usd_amount = amount * course
+                                    usd_amount = int(usd_amount)
+                                    product.reserved = False
+                                    product.save()
+                                    if usd_amount >= 1:
+                                        user.balance += int(usd_amount)
+                                        user.save()
+                                        order.active = False
+                                        order.save()
+                                        break
+                        if invoice_data['status'] == 'completed':
+                            await msg.answer(f"{product.address}")
+                            product.byed_by = user
+                            product.save()
+                            order.active = False
+                            order.save()
+                            print(invoice_data['amount'])
+                            total_amount = float(invoice_data['amount'])
+                            asyncio.create_task(waiting_balance(total_amount))
+                            break
+                        if invoice_data['status'] == 'expired':
+                            order.active = False
+                            order.save()
+                            product.reserved = False
+                            product.save()
+                            break
+                        await asyncio.sleep(10)
                     else:
                         print(f"Connection error:")
                         print("Retrying in 5 seconds...")
                         await asyncio.sleep(5)
-            if invoice_data['status'] == 'partpaid':
-                for i in invoice_data['history']:
-                    if i['status'] == 'partpaid':
-                        course = await get_crypto_with_retry('ltc')
-                        amount = float(i['amount']) / 10 ** 8
-                        usd_amount = amount * course
-                        usd_amount = int(usd_amount)
-                        product.reserved = False
-                        product.save()
-                        if usd_amount >= 1:
-                            user.balance += int(usd_amount)
-                            user.save()
-                            order.active = False
-                            order.save()
-                            break
-            if invoice_data['status'] == 'completed':
-                await msg.answer(f"{product.address}")
-                product.byed_by = user
-                product.save()
-                order.active = False
-                order.save()
-                print(invoice_data['amount'])
-                total_amount = float(invoice_data['amount'])
-                asyncio.create_task(waiting_balance(total_amount))
-                break
-            if invoice_data['status'] == 'expired':
-                order.active = False
-                order.save()
-                product.reserved = False
-                product.save()
-                break
-            await asyncio.sleep(10)
 
         except ClientConnectorError as e:
             print(f"Connection error: {e}")
