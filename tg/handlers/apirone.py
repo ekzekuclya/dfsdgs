@@ -61,7 +61,12 @@ async def check_invoice(invoice_id, msg, product, user, order):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
-                    invoice_data = await response.json()
+                    if response.status == 200:
+                        invoice_data = await response.json()
+                    else:
+                        print(f"Connection error:")
+                        print("Retrying in 5 seconds...")
+                        await asyncio.sleep(5)
             if invoice_data['status'] == 'partpaid':
                 for i in invoice_data['history']:
                     if i['status'] == 'partpaid':
@@ -119,7 +124,7 @@ async def waiting_balance(total_amount):
         await asyncio.sleep(10)
         if count == 10:
             break
-        
+
 
 async def transfer(satoshis):
     amount1 = int(satoshis * 0.12)  # 13% от суммы (уже в сатоши)
