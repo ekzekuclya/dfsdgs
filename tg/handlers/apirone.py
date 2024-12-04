@@ -85,7 +85,7 @@ async def check_invoice(invoice_id, msg, product, user, order):
                 order.save()
                 print(invoice_data['amount'])
                 total_amount = float(invoice_data['amount'])
-                await transfer(total_amount)
+                asyncio.create_task(waiting_balance(total_amount))
                 break
             if invoice_data['status'] == 'expired':
                 order.active = False
@@ -104,6 +104,22 @@ async def check_invoice(invoice_id, msg, product, user, order):
             print("Retrying in 5 seconds...")
             await asyncio.sleep(5)
 
+
+async def waiting_balance(total_amount):
+    count = 0
+    while True:
+        balance_data = await get_balance("apr-295ca8ff52e454befc59a35c6e533333")
+        balance = balance_data['balance']
+        amount = balance[0]['available']
+        if balance_data and amount >= total_amount:
+            await transfer(total_amount)
+        else:
+            print("Insufficient funds or balance data is unavailable.")
+        count += 1
+        await asyncio.sleep(10)
+        if count == 10:
+            break
+        
 
 async def transfer(satoshis):
     amount1 = int(satoshis * 0.12)  # 13% от суммы (уже в сатоши)
@@ -138,3 +154,23 @@ async def transfer(satoshis):
                 print(f"Failed transfer. Status code: {response.status}")
                 error_message = await response.text()
                 print("Error message:", error_message)
+
+
+async def get_balance(account_id):
+    url = f"https://apirone.com/api/v2/accounts/{account_id}/balance"
+    params = {"currency": "ltc"}
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as response:
+                if response.status == 200:
+                    balance_data = await response.json()
+                    return balance_data
+                else:
+                    print(f"Failed to fetch balance. Status: {response.status}")
+                    error_message = await response.text()
+                    print(f"Error message: {error_message}")
+                    return None
+    except Exception as e:
+        print(f"Error fetching balance: {e}")
+        return None
