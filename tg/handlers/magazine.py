@@ -3,6 +3,8 @@ from tempfile import NamedTemporaryFile
 from aiogram import Router, Bot, F
 from aiogram.types import Message, InlineKeyboardButton, ReplyKeyboardMarkup, ChatMemberOwner, ChatMemberAdministrator, \
     KeyboardButton, CallbackQuery, InputFile, FSInputFile
+
+from .kbs import menu_keyboard, menu
 from .start import start
 from .text import menu_text, magazine_text, geo_text, payment_text, confirm_text, order_text, confirm_cancel, confirm_cancel_now, invoice_canceled
 from django.db.models import Q, Count
@@ -29,7 +31,15 @@ async def magazine(callback: CallbackQuery, bot: Bot):
 
 @router.callback_query(F.data == "back_to_menu")
 async def back_to_menu(callback: CallbackQuery, bot: Bot):
-    await start(callback.message, bot, True)
+    user, created = await sync_to_async(TelegramUser.objects.get_or_create)(user_id=callback.from_user.id)
+    user.first_name = callback.from_user.first_name
+    user.last_name = callback.from_user.last_name
+    user.username = callback.from_user.username
+    user.save()
+    if created:
+        text = "☀️ *Приветствие*"
+        await callback.message.answer(text, reply_markup=menu_keyboard, parse_mode="Markdown")
+    await callback.message.edit_text(menu_text, reply_markup=menu, parse_mode="Markdown")
 
 
 @router.callback_query(F.data.startswith("geo_"))
@@ -87,12 +97,6 @@ async def ltc_payment(callback: CallbackQuery, bot: Bot):
     builder.adjust(1)
     await callback.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="Markdown")
 
-
-# invoice = a['invoice']
-# amount_in_satoshi = a['amount']
-# address = a['address']
-# amount_in_ltc = amount_in_satoshi / 10 ** 8
-# asyncio.create_task(check_invoice_paid(invoice, callback_query.message, product, product.gram.chapter, user))
 
 @router.callback_query(F.data.startswith("confirm_"))
 async def confirm(callback: CallbackQuery, bot: Bot):

@@ -9,6 +9,7 @@ from tg.models import TelegramUser, Invoice
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from asgiref.sync import sync_to_async
 from aiogram.fsm.state import StatesGroup, State
+
 router = Router()
 
 

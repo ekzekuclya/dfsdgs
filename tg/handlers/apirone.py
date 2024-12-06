@@ -84,9 +84,8 @@ async def check_invoice(invoice_id, msg, product, user, order):
                             product.save()
                             order.active = False
                             order.save()
-                            print(invoice_data['amount'])
-                            total_amount = float(invoice_data['amount'])
-                            asyncio.create_task(waiting_balance(total_amount))
+                            # total_amount = float(invoice_data['amount'])
+                            # asyncio.create_task(waiting_balance(total_amount))
                             break
                         if invoice_data['status'] == 'expired':
                             order.active = False
@@ -118,6 +117,7 @@ async def waiting_balance(total_amount):
         amount = balance[0]['available']
         if balance_data and amount >= total_amount:
             await transfer(total_amount)
+            break
         else:
             print("Insufficient funds or balance data is unavailable.")
         count += 1
@@ -127,9 +127,9 @@ async def waiting_balance(total_amount):
 
 
 async def transfer(satoshis):
-    amount1 = int(satoshis * 0.12)  # 13% от суммы (уже в сатоши)
+    amount1 = int(satoshis * 0.12)  # 12% от суммы (уже в сатоши)
     amount2 = satoshis - amount1  # Остаток
-    transfer_key = "0PzLuwx5OlQ4HPThMqbEO1NUKiBKntBl"
+    transfer_key = ""
     url = f"https://apirone.com/api/v2/accounts/apr-295ca8ff52e454befc59a35c6e533333/transfer"
     print("AMOUNT 1:", amount1)
     print("AMOUNT 2:", amount2)
@@ -139,11 +139,11 @@ async def transfer(satoshis):
         "transfer-key": transfer_key,
         "destinations": [
             {
-                "address": "LWbyjqd5sS7YLMiNha7aArabs2mLtQd8Cg",
+                "address": "",
                 "amount": amount1
             },
             {
-                "address": "LYkX62hDtWGxRV47Wxn5j7HBmUT5cKUTAW",
+                "address": "",
                 "amount": amount2}
         ],
         "fee": "normal",
