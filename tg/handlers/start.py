@@ -67,7 +67,7 @@ async def block_buttons_handler(callback: CallbackQuery, bot: Bot):
 
 @router.message(F.text == "ℹ️ Показать меню")
 @router.message(Command("start"))
-async def start(msg: Message, bot: Bot, edit=None):
+async def start(msg: Message, edit=None):
     user, created = await sync_to_async(TelegramUser.objects.get_or_create)(user_id=msg.from_user.id)
     user.first_name = msg.from_user.first_name
     user.last_name = msg.from_user.last_name
