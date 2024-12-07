@@ -38,7 +38,7 @@ async def add_products(callback: CallbackQuery, state: FSMContext):
         for i in geos:
             builder.add(KeyboardButton(text=f"{i.geo_name}"))
         await state.set_state(AddProductState.awaiting_geo)
-        await callback.message.answer("Выберите район", reply_markup=builder.as_markup())
+        await callback.message.answer("Выберите район", reply_markup=builder.as_markup(resize_keyboard=True))
 
 
 
@@ -50,7 +50,7 @@ async def awaiting_geo(msg: Message, state: FSMContext):
         builder = ReplyKeyboardBuilder()
         for i in grams:
             builder.add(KeyboardButton(text=f"{i.gram}"))
-        await msg.answer("Выберите грамовку", reply_markup=builder.as_markup())
+        await msg.answer("Выберите грамовку", reply_markup=builder.as_markup(resize_keyboard=True))
         await state.update_data(geo_id=geo.id)
         await state.set_state(AddProductState.awaiting_gram)
     except Exception as e:
@@ -69,7 +69,7 @@ async def awaiting_gram(msg: Message, state: FSMContext):
         for i in chapters:
             builder.add(KeyboardButton(text=f"{i.chapter_name}"))
         await state.update_data(gram_id=gram.id)
-        await msg.answer("Какой продукт хотите добавить?", reply_markup=builder.as_markup())
+        await msg.answer("Какой продукт хотите добавить?", reply_markup=builder.as_markup(resize_keyboard=True))
         await state.set_state(AddProductState.awaiting_chapter)
     except Exception as e:
         print(e)
@@ -85,7 +85,7 @@ async def awaiting_chapter(msg: Message, state: FSMContext):
         gram = await sync_to_async(Gram.objects.get)(id=gram_id)
         chapter = await sync_to_async(Chapter.objects.get)(chapter_name=msg.text)
         await state.update_data(chapter_id=chapter.id)
-        await msg.answer("Укажите цену в $", )
+        await msg.answer("Укажите цену в $", reply_markup=ReplyKeyboardRemove())
         await state.set_state(AddProductState.awaiting_usd)
     except Exception as e:
         print(e)
@@ -105,8 +105,8 @@ async def awaiting_ust(msg: Message, state: FSMContext):
         usd = int(usd)
         await state.update_data(usd=usd)
         builder = ReplyKeyboardBuilder()
-        builder.add(KeyboardButton(text="Завершить"))
-        await msg.answer("Отправляйте продукты по 1", reply_markup=builder.as_markup())
+        builder.add(KeyboardButton(text="Завершить"), )
+        await msg.answer("Отправляйте продукты по 1", reply_markup=builder.as_markup(resize_keyboard=True))
         await state.set_state(AddProductState.adding_products)
     except Exception as e:
         print(e)
@@ -127,6 +127,6 @@ async def add_products(msg: Message, state: FSMContext):
         geo = await sync_to_async(Geo.objects.get)(id=geo_id)
         gram = await sync_to_async(Gram.objects.get)(id=gram_id)
         chapter = await sync_to_async(Chapter.objects.get)(id=chapter_id)
-        new_product = await sync_to_async(Product.objects.create)(geo=geo, gram=gram, chapter=chapter, price=usd,
+        new_product = await sync_to_async(Product.objects.create)(geo_name=geo, gram=gram, product_name=chapter, price=usd,
                                                                   address=msg.text)
         await msg.answer(f"Продукт создан, {new_product.address}")
