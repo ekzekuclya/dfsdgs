@@ -2,7 +2,7 @@ from aiogram import Router, Bot, F
 from aiogram.filters import Command, CommandObject, BaseFilter
 from aiogram.types import Message, InlineKeyboardButton, ReplyKeyboardMarkup, ChatMemberOwner, ChatMemberAdministrator, \
     KeyboardButton, CallbackQuery, KeyboardButton, ReplyKeyboardRemove
-from .kbs import menu, menu_keyboard
+from .kbs import menu, menu_keyboard, admin
 from .text import menu_text, order_text
 from django.db.models import Q
 from .start import start
@@ -12,6 +12,13 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from asgiref.sync import sync_to_async
 from aiogram.fsm.state import StatesGroup, State
 router = Router()
+
+
+@router.message(Command("admin"))
+async def admin_panel(msg: Message):
+    user, created = await sync_to_async(TelegramUser.objects.get_or_create)(user_id=msg.from_user.id)
+    if user.is_admin:
+        await msg.answer("Привет Админ!", reply_markup=admin)
 
 
 class AddProductState(StatesGroup):
@@ -122,4 +129,3 @@ async def add_products(msg: Message, state: FSMContext):
         new_product = await sync_to_async(Product.objects.create)(geo=geo, gram=gram, chapter=chapter, price=usd,
                                                                   address=msg.text)
         await msg.answer(f"Продукт создан, {new_product.address}")
-        
