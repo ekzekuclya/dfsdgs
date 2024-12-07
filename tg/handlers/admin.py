@@ -107,6 +107,7 @@ async def awaiting_ust(msg: Message, state: FSMContext):
         builder = ReplyKeyboardBuilder()
         builder.add(KeyboardButton(text="Завершить"))
         await msg.answer("Отправляйте продукты по 1", reply_markup=builder.as_markup())
+        await state.set_state(AddProductState.adding_products)
     except Exception as e:
         print(e)
 
