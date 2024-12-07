@@ -14,7 +14,7 @@ async def main():
     from aiogram import Bot, Dispatcher
     from tg.handlers import start, magazine, pokupka, promocode, refs, admin
 
-    bot = Bot(token="7784007806:AAETx7oWTbo6MbFmCwunf086hK_lCdFlExU")
+    bot = Bot(token="7531001764:AAECqkt7KosOFWh5Lm1zq6Jj6P9eP7-CFZQ")
     dp = Dispatcher(storage=MemoryStorage())
 
     dp.include_routers(start.router, magazine.router, pokupka.router, promocode.router, refs.router, admin.router)
